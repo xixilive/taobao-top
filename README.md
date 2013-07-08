@@ -1,6 +1,6 @@
 # Taobao::Top
 
-  Taobao TOP API (http://open.taobao.com)
+   A simple ruby implementation of Taobao TOP API (http://open.taobao.com)
 
 ## Installation
 

@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Taobao::Top::VERSION
   spec.authors       = ["xixilive"]
   spec.email         = ["xixilive@gmail.com"]
-  spec.description   = %q{Taobao TOP api implements}
-  spec.summary       = %q{Taobao TOP api implements}
-  spec.homepage      = ""
+  spec.description   = %q{a simple ruby implementation of TOP API}
+  spec.summary       = %q{a simple ruby implementation of TOP API}
+  spec.homepage      = "https://github.com/xixilive/taobao-top"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)

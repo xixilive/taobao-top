@@ -98,7 +98,7 @@ module Taobao
             @raw_response
           end
         rescue Exception => e
-          RestClient.create_log(e)
+          RestClient.create_log("stderr") << e
         end
       end
 
