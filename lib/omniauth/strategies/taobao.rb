@@ -3,15 +3,15 @@ require 'taobao/top'
 
 module OmniAuth::Strategies
   class Taobao < OmniAuth::Strategies::OAuth2
-  	option :client_options, client_options_hash
-  	option :taobao_user, "user"
+  	option :client_options, ::Taobao::TOP.gateways
+  	option :taobao_user_role, nil
 
 		def request_phase
       options[:state] ||= '1'
       super
     end
 
-    uid { raw_info['uid'] }
+    uid { raw_info['user_id'] }
 
     info do
       {
@@ -20,24 +20,17 @@ module OmniAuth::Strategies
       }
     end
 
-    extra { :raw_info => raw_info }
+    extra do
+      { :raw_info => raw_info }
+    end
 
     def raw_info
-	    @rawinfo ||= fetch_raw_info
+	    @rawinfo ||= (!!options.taobao_user_role ? fetch_raw_info : fetch_raw_info_from_params)
     end
 
   	private
-  	def client_options_hash
-  		domain = Taobao::TOP.sandbox ? "tbsandbox" : "taobao"
-  		{
-  			:site => "http://gw.api.#{domain}.com/router/rest",
-        :authorize_url => "https://oauth.#{domain}.com/authorize",
-        :token_url => "https://oauth.#{domain}.com/token"
-  		}
-  	end
-
   	def raw_info_method
-  		%w[taobao user #{options.taobao_user} get].uniq.join(".")
+      ["taobao", "user", "#{options.taobao_user_role}", "get"].uniq.join(".")
   	end
 
   	def raw_info_fields
@@ -45,14 +38,17 @@ module OmniAuth::Strategies
   	end
 
     def fetch_raw_info
-      service = Taobao::TOP::Service.new(options.client_id, options.client_secret, :session => @access_token.token)
-      p service, raw_info_method, raw_info_fields
-      res = service.get raw_info_method, :fields => raw_info_fields
-      unless res.error?
-        res.body.user
-      end
+      service = ::Taobao::TOP::Service.new(options.client_id, options.client_secret, :session => @access_token.token)
+      res = service.get(raw_info_method, :fields => raw_info_fields)
+      res.error? ? {} : res.body.user
     end
+
+    def fetch_raw_info_from_params
+      attrs = [["user_id", "taobao_user_id"],["nick", "taobao_user_nick"]]
+      Hash[attrs.collect{|arr| [arr[0], @access_token[arr[1]]]}].select{|k,v| v != nil}
+    end
+
   end
 end
 
-OmniAuth.config.add_camelization 'taobao', 'Taobao'
+::OmniAuth.config.add_camelization 'taobao', 'Taobao'

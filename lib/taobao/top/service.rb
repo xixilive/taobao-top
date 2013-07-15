@@ -86,8 +86,8 @@ module Taobao
         prepare_params @options.merge(args.extract_options!).merge(method: method)
         begin
           @raw_response = case http_method
-          when :get then RestClient.get [gateway, @params.to_query].join("?")
-          when :post then RestClient.post gateway, @params
+          when :get then RestClient.get [TOP.gateways[:site], @params.to_query].join("?")
+          when :post then RestClient.post TOP.gateways[:site], @params
           end
           @response = case @params.format.to_s.downcase
           when 'json'
@@ -101,11 +101,7 @@ module Taobao
           RestClient.create_log("stderr") << e
         end
       end
-
-      def gateway
-        domain = TOP.sandbox ? "tbsandbox" : "taobao"
-        "http://gw.api.#{domain}.com/router/rest"
-      end
+      
 		end
 
 	end

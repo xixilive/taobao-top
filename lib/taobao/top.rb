@@ -10,6 +10,15 @@ module Taobao
     mattr_accessor :sandbox
     @@sandbox = false
 
+    def self.gateways
+      domain = (!!sandbox) ? "tbsandbox" : "taobao"
+      {
+        :site => "http://gw.api.#{domain}.com/router/rest",
+        :authorize_url => "https://oauth.#{domain}.com/authorize",
+        :token_url => "https://oauth.#{domain}.com/token"
+      }
+    end
+
     autoload :Options, 'taobao/top/service.rb'
     autoload :Params, 'taobao/top/service.rb'
     autoload :Service, 'taobao/top/service.rb'
