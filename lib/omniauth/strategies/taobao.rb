@@ -1,12 +1,13 @@
+require 'omniauth'
 require 'omniauth-oauth2'
 require 'taobao/top'
 
 module OmniAuth::Strategies
   class Taobao < OmniAuth::Strategies::OAuth2
-  	option :client_options, ::Taobao::TOP.gateways
-  	option :taobao_user_role, nil
+    option :client_options, ::Taobao::TOP.gateways
+    option :taobao_user_role, nil
 
-		def request_phase
+    def request_phase
       options[:state] ||= '1'
       super
     end
@@ -25,17 +26,21 @@ module OmniAuth::Strategies
     end
 
     def raw_info
-	    @rawinfo ||= (!!options.taobao_user_role ? fetch_raw_info : fetch_raw_info_from_params)
+      @rawinfo ||= (!!options.taobao_user_role ? fetch_raw_info : fetch_raw_info_from_params)
     end
 
-  	private
-  	def raw_info_method
+    private
+    def raw_info_method
       ["taobao", "user", "#{options.taobao_user_role}", "get"].uniq.join(".")
-  	end
+    end
 
-  	def raw_info_fields
-  		"user_id,uid,nick,sex,buyer_credit,seller_credit,location,created,last_visit,type,avatar,has_shop,is_golden_seller,vip_info"
-  	end
+    def raw_info_fields
+      {
+        "buyer" => "user_id,nick,sex,avatar,buyer_credit,has_shop,vip_info",
+        "seller" => "user_id,nick,sex,avatar,seller_credit,type,has_shop,is_golden_seller,vip_info",
+        "user" => "user_id,nick,sex,avatar,email,buyer_credit,seller_credit,location,type,has_shop,vip_info"
+      }[options.taobao_user_role.to_s]
+    end
 
     def fetch_raw_info
       service = ::Taobao::TOP::Service.new(options.client_id, options.client_secret, :session => @access_token.token)

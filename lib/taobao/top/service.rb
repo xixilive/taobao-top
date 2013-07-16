@@ -1,10 +1,9 @@
-
 require 'digest/md5'
 require 'digest/hmac'
 require 'rest_client'
 
 module Taobao
-	module TOP
+  module TOP
     class Options < ::Hashie::Mash;
       def self.default
         self.new v: '2.0', sign_method: 'md5', format: 'json'
@@ -55,7 +54,7 @@ module Taobao
       end
     end
 
-		class Service
+    class Service
 
       attr_reader :options, :params, :response
 
@@ -64,7 +63,7 @@ module Taobao
         @app_key, @app_secret = args.slice!(0,2)
         raise ArgumentError.new "app_key or app_secret missing!" unless @app_key && @app_secret
         yield @options if block_given?
-			end
+      end
 
       def get method, *args
         invoke method, :get, *args
@@ -85,24 +84,23 @@ module Taobao
       def invoke method, http_method, *args
         prepare_params @options.merge(args.extract_options!).merge(method: method)
         begin
-          @raw_response = case http_method
+          raw_response = case http_method
           when :get then RestClient.get [TOP.gateways[:site], @params.to_query].join("?")
           when :post then RestClient.post TOP.gateways[:site], @params
           end
           @response = case @params.format.to_s.downcase
           when 'json'
-            TOP::Response.from_json(@raw_response)
+            TOP::Response.from_json(raw_response)
           when 'xml'
-            TOP::Response.from_xml(@raw_response)
+            TOP::Response.from_xml(raw_response)
           else
-            @raw_response
+            raw_response
           end
         rescue Exception => e
           RestClient.create_log("stderr") << e
         end
       end
-      
-		end
+    end
 
-	end
+  end
 end
