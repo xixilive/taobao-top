@@ -12,6 +12,11 @@ module OmniAuth::Strategies
       super
     end
 
+    def callback_phase
+      ignore_sandbox_ssl_verify!
+      super
+    end
+
     uid { raw_info['user_id'] }
 
     info do
@@ -51,6 +56,14 @@ module OmniAuth::Strategies
     def fetch_raw_info_from_params
       attrs = [["user_id", "taobao_user_id"],["nick", "taobao_user_nick"]]
       Hash[attrs.collect{|arr| [arr[0], @access_token[arr[1]]]}].select{|k,v| v != nil}
+    end
+
+    private
+    def ignore_sandbox_ssl_verify!
+      if ::Taobao::TOP.sandbox? && defined?(::OpenSSL::SSL::VERIFY_PEER)
+        ::OpenSSL::SSL.send :remove_const, :VERIFY_PEER
+        ::OpenSSL::SSL.const_set :VERIFY_PEER, 0
+      end
     end
 
   end
